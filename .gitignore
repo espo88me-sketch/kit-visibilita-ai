@@ -1,0 +1,11 @@
+prova/
+dist/
+**/chiavi-api.txt
+**/progetti/*/
+__pycache__/
+.DS_Store
+prova-zip/
+.claude/
+**/.claude/
+risposte-test.json
+.parole-vietate

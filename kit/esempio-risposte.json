@@ -1,0 +1,15 @@
+{
+  "sito": "https://www.esempio.it",
+  "brand": "Esempio",
+  "alias": ["Esempio Srl"],
+  "offerta": "corsi di yoga online",
+  "pubblico": "principianti e persone over 50",
+  "zona": "online",
+  "mercato": {"lingua": "it", "paese": "IT"},
+  "concorrenti": ["concorrente-uno.it", "Concorrente Due"],
+  "domande_clienti": ["Si può imparare lo yoga da casa senza un insegnante?"],
+  "piattaforme": ["chatgpt", "gemini", "perplexity"],
+  "n_domande": 15,
+  "ripetizioni": 3,
+  "tetto_spesa": 4
+}
