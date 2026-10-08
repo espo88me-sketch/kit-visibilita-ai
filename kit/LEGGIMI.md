@@ -28,6 +28,14 @@ Non serve installare altro: il kit usa solo Python.
 
 Le chiavi le incolli durante l'intervista. Se vuoi, il kit le salva nel file `chiavi-api.txt` dentro questa cartella, così non te le richiede più. **Non condividere quel file.** Puoi anche cancellarlo quando vuoi.
 
+Se l'incolla nel terminale non funziona, crea tu il file `chiavi-api.txt` in questa cartella, una riga per chiave (solo quelle che usi), e rilancia:
+
+```
+OPENAI_API_KEY=la-tua-chiave
+GEMINI_API_KEY=la-tua-chiave
+PERPLEXITY_API_KEY=la-tua-chiave
+```
+
 ---
 
 ## Come si usa

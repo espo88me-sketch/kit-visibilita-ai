@@ -10,6 +10,7 @@ Si usa in due modi:
 import getpass
 import json
 import math
+import os
 import re
 import sys
 import webbrowser
@@ -24,6 +25,8 @@ from . import piattaforme as P
 from .util import (KIT, FILE_CHIAVI, chiave, chiedi, conferma, dominio, get_ok, giallo,
                    grassetto, maschera, rosso, salva_chiave, scegli, sembra_dominio, tenue,
                    titolo, verde, blu)
+
+WINDOWS = os.name == "nt"
 
 PROGETTI = KIT / "progetti"
 
@@ -148,7 +151,11 @@ def passo_chiavi():
     titolo("Passo 4 di 4", "Piattaforme")
     print("  Per ogni assistente serve una chiave API, che si crea sul sito del servizio. Puoi usarne")
     print("  anche solo una o due: il kit misura le piattaforme che attivi.")
-    print(tenue("  Mentre incolli una chiave non vedrai i caratteri: è normale.\n"))
+    if WINDOWS:
+        print(tenue("  Incolla la chiave con il tasto destro del mouse o con Ctrl+V, poi premi Invio."))
+    else:
+        print(tenue("  Mentre incolli una chiave non vedrai i caratteri: è normale."))
+    print(tenue(f"  Se l'incolla non funziona, scrivi le chiavi nel file {FILE_CHIAVI.name} (vedi LEGGIMI) e rilancia.\n"))
     scelte, nuove = [], {}
     for x in P.ORDINE:
         k = chiave(x)
@@ -158,10 +165,15 @@ def passo_chiavi():
                 scelte.append(x)
             continue
         print(f"  {P.NOMI[x]}: chiave da {tenue(LINK_CHIAVI[x])}")
-        try:
-            k = getpass.getpass(f"  Incolla la chiave {P.NOMI[x]} (Invio per saltare): ").strip()
-        except Exception:  # noqa: BLE001
-            k = input(f"  Incolla la chiave {P.NOMI[x]} (Invio per saltare): ").strip()
+        domanda = f"  Incolla la chiave {P.NOMI[x]} (Invio per saltare): "
+        if WINDOWS:
+            # getpass su Windows legge un tasto alla volta e perde l'incolla: input visibile
+            k = input(domanda).strip()
+        else:
+            try:
+                k = getpass.getpass(domanda).strip()
+            except Exception:  # noqa: BLE001
+                k = input(domanda).strip()
         if not k:
             continue
         ok, msg = verifica_chiave(x, k)
