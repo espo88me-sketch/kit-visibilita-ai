@@ -4,7 +4,7 @@ Scopri come **ChatGPT, Gemini e Perplexity** parlano del tuo sito: se ti nominan
 
 Alla fine ottieni una **dashboard** che puoi aprire nel browser, anche offline, e inoltrare a chi vuoi.
 
-Il metodo è quello della [AI Search Prompt Library di Aleyda Solis](https://www.aleydasolis.com/en/ai-search/ai-search-prompt-library/): le domande seguono il percorso del cliente, ognuna viene ripetuta più volte e le piattaforme restano separate.
+Il metodo: le domande seguono il percorso del cliente, ognuna viene ripetuta più volte e le piattaforme restano separate.
 
 ---
 
@@ -48,10 +48,10 @@ In alternativa apri il Prompt dei comandi in questa cartella e scrivi `python av
 
 Poi rispondi a **quattro passi**, in un paio di minuti:
 
-1. **Il tuo sito**: indirizzo e nome del brand
-2. **Cosa offri e a chi**: in poche parole, dove lavori, in che lingua fare le domande
-3. **Concorrenti e domande vere**: facoltativi, ma rendono la misura molto più utile
-4. **Piattaforme**: le chiavi che vuoi usare, la grandezza della misura e il tetto di spesa
+1. **Il tuo sito**: l'indirizzo. Il kit ti chiede se hai un **file di brand identity** (PDF, Word, PowerPoint, testo): basta dirgli come si chiama, anche solo una parola, e lo cerca lui nelle cartelle Scrivania, Documenti, Download, OneDrive e iCloud. Poi ti chiede se può **leggere le pagine principali del sito** (home, chi siamo, servizi, contatti): se dici sì, ricava da lì le risposte dei passi 3 e 4 e tu le confermi
+2. **Piattaforme**: le chiavi che vuoi usare
+3. **Chi sei, cosa offri e a chi**: nome del brand, in poche parole cosa offri, dove lavori, in che lingua fare le domande
+4. **Concorrenti e domande vere**: facoltativi, ma rendono la misura molto più utile. Alla fine scegli la grandezza della misura e il tetto di spesa
 
 Il kit prepara le domande e te le mostra. Puoi accettarle, rigenerarle o correggerle a mano nel file `domande.csv`. Poi parte la misura e alla fine si apre la dashboard.
 
@@ -112,7 +112,7 @@ Tutto resta sul tuo computer, nella cartella `progetti/<tuo-sito>/`:
 | `dashboard.html` | l'ultima dashboard |
 | `misure/<data>/risposte.jsonl` | le risposte grezze di ogni misura |
 
-Le domande e le risposte passano solo da OpenAI, Google e Perplexity, attraverso le loro API. Il kit non manda niente a nessun altro.
+Le domande e le risposte passano solo da OpenAI, Google e Perplexity, attraverso le loro API. Se scegli di usarli, passano da lì anche il file di brand identity e il testo delle pagine del sito, una volta sola, per ricavare le risposte all'intervista: mandalo solo se puoi condividerlo con quel servizio. Il kit non manda niente a nessun altro.
 
 ---
 

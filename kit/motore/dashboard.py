@@ -399,9 +399,7 @@ def genera(A, p, percorso, data_misura):
         out.append(f"<li>{li}</li>")
     out.append("</ul></section>")
 
-    out.append("<footer>Metodo: <a href='https://www.aleydasolis.com/en/ai-search/ai-search-prompt-library/' "
-               "target='_blank' rel='noopener'>AI Search Prompt Library di Aleyda Solis</a>. "
-               f"Generato dal kit Visibilità AI il {datetime.now():%d/%m/%Y alle %H:%M}. "
+    out.append(f"<footer>Generato dal kit Visibilità AI il {datetime.now():%d/%m/%Y alle %H:%M}. "
                f"Costo delle risposte di questa misura: circa ${A['costo_risposte']:.2f}.</footer>")
     out.append("</div></body></html>")
     percorso.write_text("".join(out), encoding="utf-8")

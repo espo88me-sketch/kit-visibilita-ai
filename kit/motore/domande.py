@@ -1,6 +1,6 @@
 """Il set di domande da porre agli assistenti AI.
 
-Segue il metodo di Aleyda Solis (AI Search Prompt Library):
+Il metodo:
 - si parte da chi è il cliente e cosa cerca, non da un elenco di parole chiave;
 - le domande coprono tutte le fasi del percorso del cliente;
 - sono scritte come le scriverebbe una persona vera, con vincoli realistici
@@ -48,9 +48,8 @@ def _istruzioni(p: dict, n: int) -> str:
     rip = ripartizione(n)
     conc = ", ".join(c["nome"] for c in p.get("concorrenti", [])) or "(nessuno indicato)"
     clienti = "\n".join(f"- {d}" for d in p.get("domande_clienti", [])) or "(nessuna)"
-    return f"""Sei un esperto di GEO (Generative Engine Optimization) e segui il metodo della
-"AI Search Prompt Library" di Aleyda Solis. Devi costruire il set di domande con cui
-misurare quanto un brand è visibile nelle risposte di ChatGPT, Gemini e Perplexity.
+    return f"""Sei un esperto di GEO (Generative Engine Optimization). Devi costruire il set di domande
+che segue il percorso del cliente, con cui misurare quanto un brand è visibile nelle risposte di ChatGPT, Gemini e Perplexity.
 
 IL BRAND
 - Nome: {p['brand']}

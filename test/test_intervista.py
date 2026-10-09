@@ -9,6 +9,9 @@ import test_offline_fakes as T  # noqa
 from motore import flusso as F
 risposte = iter([
     "www.Pizzeria-Da-Mario.it/menu",   # sito
+    "",                                # brand identity: default no
+    "n",                               # niente scansione del sito
+    "s",                               # salva chiavi
     "",                                # brand: default
     "Da Mario, Pizzeria Mario",        # alias
     "",                                # offerta vuota → deve richiederla
@@ -19,7 +22,6 @@ risposte = iter([
     "Pizzeria Rossa (pizzeriarossa.it), Domino's",
     "Qual è la pizza più buona a Bologna con consegna dopo le 23?",
     "",                                # fine domande
-    "s",                               # salva chiavi
     "1",                               # dimensione rapida
     "",                                # tetto default
     "1",                               # domande vanno bene

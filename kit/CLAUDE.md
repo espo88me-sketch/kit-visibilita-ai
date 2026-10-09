@@ -3,8 +3,15 @@
 Questa cartella è un tool che misura come ChatGPT, Gemini e Perplexity parlano di un sito.
 La guida per le persone è `LEGGIMI.md`. Se l'utente ti chiede di usare il kit:
 
-1. **Intervista in chat, breve.** Raccogli le risposte dei 4 passi (sito e brand · cosa offre, a chi,
-   dove, mercato/lingua · concorrenti e fino a 3 domande vere dei clienti · piattaforme e tetto di spesa).
+1. **Intervista in chat, breve.** Chiedi l'indirizzo del sito, poi due domande esplicite prima delle altre:
+   - "Hai un file di brand identity (brand book, presentazione, profilo aziendale)?" Se sì, chiedi come si chiama
+     (anche solo una parola) e cercalo tu sul computer (Scrivania, Documenti, Download, OneDrive, iCloud):
+     proponi i file trovati, fai scegliere quello giusto e leggilo. Non chiedere di trascinarlo;
+   - "Posso leggere le pagine principali del sito (home, chi siamo, servizi, contatti) per ricavare le
+     informazioni?" Solo con un sì esplicito.
+   Da quello che leggi ricava brand, altri nomi, offerta (come la direbbe un cliente), pubblico, zona,
+   mercato/lingua e i concorrenti nominati: mostrali tutti insieme e chiedi conferma. Chiedi solo i campi
+   mancanti o da correggere, poi fino a 3 domande vere dei clienti, piattaforme e tetto di spesa.
    Una domanda per volta, proponi tu i default. Scrivi le risposte in un file JSON con la stessa
    struttura di `esempio-risposte.json`.
 2. **Chiavi.** Mai chiederle in chat e mai scriverle tu. L'utente le mette nel file `chiavi-api.txt`

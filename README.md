@@ -2,7 +2,8 @@
 
 Misura come **ChatGPT, Gemini e Perplexity** parlano del tuo sito: se ti nominano, se ti linkano, quali pagine, chi propongono al posto tuo e cosa dicono di te. Alla fine apre una dashboard leggibile da chiunque.
 
-- Intervista in 4 passi, poi le domande le prepara il kit, seguendo la [AI Search Prompt Library di Aleyda Solis](https://www.aleydasolis.com/en/ai-search/ai-search-prompt-library/)
+- Intervista in 4 passi: se hai un file di brand identity o lasci leggere le pagine principali del sito, le risposte le ricava il kit e tu le confermi
+- Le domande le prepara il kit, seguendo la [AI Search Prompt Library di Aleyda Solis](https://www.aleydasolis.com/en/ai-search/ai-search-prompt-library/)
 - Usa una, due o tutte e tre le piattaforme: dipende dalle chiavi API che hai
 - Solo Python 3.9+, nessuna libreria da installare
 - Tetto di spesa: il kit non lo supera mai. Una misura rapida su tre piattaforme costa circa 1,5 $

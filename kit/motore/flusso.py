@@ -1,4 +1,4 @@
-"""Il percorso completo: intervista → domande → misura → dashboard.
+"""Il percorso completo: intervista (anche da brand identity e sito) → domande → misura → dashboard.
 
 Si usa in due modi:
 - interattivo: `python3 avvia.py` fa tutte le domande nel terminale;
@@ -22,7 +22,8 @@ from . import dashboard as DB
 from . import domande as DOM
 from . import misura as MI
 from . import piattaforme as P
-from .util import (KIT, FILE_CHIAVI, chiave, chiedi, conferma, dominio, get_ok, giallo,
+from . import profilo as PR
+from .util import (KIT, FILE_CHIAVI, chiave, chiedi, conferma, dominio, errore_leggibile, get_ok, giallo,
                    grassetto, maschera, rosso, salva_chiave, scegli, sembra_dominio, tenue,
                    titolo, verde, blu)
 
@@ -147,8 +148,8 @@ def chiavi_disponibili(piatt):
     return {x: chiave(x) for x in piatt if chiave(x)}
 
 
-def passo_chiavi():
-    titolo("Passo 4 di 4", "Piattaforme")
+def passo_chiavi(passo="Passo 2 di 4"):
+    titolo(passo, "Piattaforme")
     print("  Per ogni assistente serve una chiave API, che si crea sul sito del servizio. Puoi usarne")
     print("  anche solo una o due: il kit misura le piattaforme che attivi.")
     if WINDOWS:
@@ -199,6 +200,84 @@ def passo_chiavi():
 
 # ───────────────────────── intervista ────────────────────────────────────────
 
+def chiedi_documento():
+    """Cerca il file di brand identity sul computer partendo da un indizio. Ritorna il documento letto o None."""
+    print(tenue("  Lo cerco io sul computer (Scrivania, Documenti, Download, OneDrive, iCloud)."))
+    print(tenue(f"  Basta una parola del nome del file o della cartella. Formati: {', '.join(PR.FORMATI)}"))
+    if not WINDOWS:
+        print(tenue("  Se il Mac chiede il permesso di accedere a queste cartelle, consenti: serve solo a cercare."))
+    while True:
+        r = chiedi("Come si chiama, anche solo in parte (es. brand book, linee guida; Invio per saltare)")
+        if not r:
+            return None
+        if PR.sembra_percorso(r):
+            f = PR.percorso_da_input(r)
+            if not f.is_file():
+                print(giallo("  Non trovo il file a quel percorso. Riprova con una parola del nome."))
+                continue
+        else:
+            print(tenue("  Cerco…"))
+            trovati = PR.cerca_documenti(r)
+            if not trovati:
+                print(giallo(f"  Nessun file con '{r}' nel nome. Prova un'altra parola, o premi Invio per saltare."))
+                continue
+            casa = Path.home()
+
+            def breve(p):
+                try:
+                    return "~" + os.sep + str(p.relative_to(casa))
+                except ValueError:
+                    return str(p)
+            print("  Ho trovato:")
+            i = scegli("Quale uso? (numero)", [breve(p) for p in trovati] + ["Nessuno di questi, cerco con un'altra parola"], 1)
+            if i > len(trovati):
+                continue
+            f = trovati[i - 1]
+        try:
+            doc = PR.leggi_documento(f)
+        except Exception as e:  # noqa: BLE001
+            print(giallo(f"  Non riesco a leggerlo: {e}. Prova con un altro file, o premi Invio per saltare."))
+            continue
+        print(verde(f"  ✓ {f.name}"))
+        return doc
+
+
+def raccogli_profilo(sito, documento, scansione, piatt, spesa):
+    """Legge documento e pagine del sito e ritorna la scheda del brand ({} se non riesce)."""
+    chiavi = chiavi_disponibili(piatt)
+    pdf = bool(documento and documento.get("pdf"))
+    if pdf and not PR.chi_legge(chiavi, True):
+        print(giallo("  Il PDF lo leggono solo ChatGPT o Gemini, che non hai attivato: salvalo come .docx o .txt."))
+        documento = None
+    letto_sito = None
+    if scansione:
+        print(tenue("\n  Leggo le pagine principali del sito…"))
+        try:
+            letto_sito = PR.scansiona_sito(sito, avviso=lambda m: print(tenue(m)))
+            for u in letto_sito["pagine"]:
+                print(tenue(f"  ✓ {u}"))
+        except Exception as e:  # noqa: BLE001
+            print(giallo(f"  Non riesco ad aprire il sito ({errore_leggibile(e)}): procedo senza."))
+    if not documento and not letto_sito:
+        return {}
+    x = PR.chi_legge(chiavi, pdf and bool(documento))
+    print(tenue(f"  {P.NOMI[x]} legge {'il documento e le pagine' if documento and letto_sito else 'il documento' if documento else 'le pagine'} e ricava le risposte…"))
+    try:
+        return PR.estrai(dominio(sito), documento, letto_sito, chiavi, spesa)
+    except Exception as e:  # noqa: BLE001
+        print(giallo(f"  Non sono riuscito a ricavare le informazioni ({errore_leggibile(e)}): te le chiedo io."))
+        return {}
+
+
+def mostra_profilo(pr):
+    righe = [("Brand", pr.get("brand")), ("Altri nomi", ", ".join(pr.get("alias") or [])),
+             ("Cosa offri", pr.get("offerta")), ("A chi ti rivolgi", pr.get("pubblico")),
+             ("Dove lavori", pr.get("zona")), ("Concorrenti", ", ".join(pr.get("concorrenti") or []))]
+    print("\n  " + grassetto("Ecco cosa ho ricavato:"))
+    for k, v in righe:
+        print(f"    {k + ':':18} {v if v else tenue('— non trovato')}")
+
+
 def intervista() -> dict:
     print(grassetto("\n  Quattro passi, un paio di minuti. Le risposte tra [parentesi] sono già pronte: premi Invio per tenerle."))
 
@@ -209,25 +288,60 @@ def intervista() -> dict:
             break
         print(giallo("  Non sembra un indirizzo web. Riprova, per esempio: www.esempio.it"))
     dom = dominio(sito)
-    brand = chiedi("Nome del brand, come lo scrivono i clienti", dom.split(".")[0].replace("-", " ").title())
-    alias = chiedi("Altri modi in cui ti chiamano, separati da virgola (Invio per saltare)")
+    print(tenue("\n  Se hai già materiale che descrive il tuo brand, ricavo da lì le risposte e salti le domande."))
+    documento = None
+    if conferma("Hai un file di brand identity (brand book, presentazione aziendale, profilo)?", False):
+        documento = chiedi_documento()
+    scansione = conferma(f"Posso leggere le pagine principali di {dom} (home, chi siamo, servizi, contatti) "
+                         "per ricavare le informazioni?")
+    if documento or scansione:
+        print(tenue("  Il testo raccolto va a una delle piattaforme che attivi al prossimo passo, solo per leggerlo "
+                    "(costo: pochi centesimi)."))
 
-    titolo("Passo 2 di 4", "Cosa offri e a chi")
-    print(tenue("  Scrivilo come lo direbbe un cliente, non come uno slogan."))
-    print(tenue("  Esempi: 'corsi di yoga online' · 'software per la gestione delle palestre' · 'agriturismo con piscina'"))
-    offerta = chiedi("Cosa offri, in poche parole", obbligatoria=True)
-    pubblico = chiedi("A chi ti rivolgi (es. famiglie, piccole aziende; Invio per saltare)")
-    zona = chiedi("Dove lavori: una città, una regione, o 'online'", "online")
-    print("  In quale mercato e lingua faccio le domande?")
-    i = scegli("Scegli un numero", [m[0] for m in MERCATI] + ["Altro"], 1)
-    if i <= len(MERCATI):
-        lingua, paese = MERCATI[i - 1][1], MERCATI[i - 1][2]
+    piatt = passo_chiavi("Passo 2 di 4")
+    if not piatt:
+        sys.exit(rosso("\n  Serve almeno una piattaforma con una chiave valida. Rilancia il kit quando ne hai una."))
+
+    spesa = {"totale": 0.0}
+    pr = raccogli_profilo(sito, documento, scansione, piatt, spesa) if (documento or scansione) else {}
+    tieni = False
+    if pr:
+        mostra_profilo(pr)
+        tieni = conferma("Tengo queste informazioni? (rispondendo no le correggi una per una)")
+
+    def campo(k, domanda, default="", obbligatoria=False):
+        v = pr.get(k) or ""
+        if isinstance(v, list):
+            v = ", ".join(v)
+        if tieni and v:
+            return v
+        return chiedi(domanda, v or default, obbligatoria)
+
+    titolo("Passo 3 di 4", "Chi sei, cosa offri e a chi")
+    brand = campo("brand", "Nome del brand, come lo scrivono i clienti", dom.split(".")[0].replace("-", " ").title())
+    alias = campo("alias", "Altri modi in cui ti chiamano, separati da virgola (Invio per saltare)")
+    if not (tieni and pr.get("offerta")):
+        print(tenue("  Scrivilo come lo direbbe un cliente, non come uno slogan."))
+        print(tenue("  Esempi: 'corsi di yoga online' · 'software per la gestione delle palestre' · 'agriturismo con piscina'"))
+    offerta = campo("offerta", "Cosa offri, in poche parole", obbligatoria=True)
+    pubblico = campo("pubblico", "A chi ti rivolgi (es. famiglie, piccole aziende; Invio per saltare)")
+    zona = campo("zona", "Dove lavori: una città, una regione, o 'online'", "online")
+    noto = next((m for m in MERCATI if pr.get("lingua") == m[1] and pr.get("paese") == m[2]), None)
+    if tieni and noto:
+        lingua, paese = noto[1], noto[2]
+        print(tenue(f"  Mercato: {noto[0]}"))
     else:
-        lingua = chiedi("Codice lingua di due lettere (es. pt, nl)", "en").lower()[:2]
-        paese = chiedi("Codice paese di due lettere (es. PT, NL)", "").upper()[:2]
+        print("  In quale mercato e lingua faccio le domande?")
+        i = scegli("Scegli un numero", [m[0] for m in MERCATI] + ["Altro"], MERCATI.index(noto) + 1 if noto else 1)
+        if i <= len(MERCATI):
+            lingua, paese = MERCATI[i - 1][1], MERCATI[i - 1][2]
+        else:
+            lingua = chiedi("Codice lingua di due lettere (es. pt, nl)", pr.get("lingua") or "en").lower()[:2]
+            paese = chiedi("Codice paese di due lettere (es. PT, NL)", pr.get("paese") or "").upper()[:2]
 
-    titolo("Passo 3 di 4", "Concorrenti e domande vere")
-    conc = chiedi("Fino a 5 concorrenti, nome o sito, separati da virgola (Invio per saltare)")
+    titolo("Passo 4 di 4", "Concorrenti e domande vere")
+    conc = chiedi("Fino a 5 concorrenti, nome o sito, separati da virgola (Invio per saltare)",
+                  ", ".join(pr.get("concorrenti") or []))
     print(tenue("  Una domanda che i tuoi clienti fanno davvero rende la misura più realistica. Fino a 3."))
     dc = []
     for n in range(3):
@@ -235,10 +349,6 @@ def intervista() -> dict:
         if not q:
             break
         dc.append(q)
-
-    piatt = passo_chiavi()
-    if not piatt:
-        sys.exit(rosso("\n  Serve almeno una piattaforma con una chiave valida. Rilancia il kit quando ne hai una."))
 
     print("\n  Quanto grande vuoi la misura?")
     opz = []
@@ -255,7 +365,7 @@ def intervista() -> dict:
     except ValueError:
         tetto = float(tetto_def)
 
-    return normalizza({
+    p = normalizza({
         "sito": sito, "brand": brand, "alias": alias.split(",") if alias else [],
         "offerta": offerta, "pubblico": pubblico, "zona": zona,
         "mercato": {"lingua": lingua, "paese": paese},
@@ -263,6 +373,9 @@ def intervista() -> dict:
         "domande_clienti": dc, "piattaforme": piatt, "n_domande": n_dom,
         "ripetizioni": RIPETIZIONI, "tetto_spesa": tetto,
     })
+    if spesa["totale"]:
+        p["spesa_preparazione"] = round(spesa["totale"], 4)
+    return p
 
 
 def stima(n_dom, rip, piatt):
@@ -275,7 +388,7 @@ def stima(n_dom, rip, piatt):
 def prepara_domande(p, interattivo=True):
     chiavi = chiavi_disponibili(P.ORDINE)
     spesa = {"totale": 0.0}
-    print(tenue("\n  Preparo le domande con il metodo di Aleyda Solis…"))
+    print(tenue("\n  Preparo le domande sul percorso dei tuoi clienti…"))
     dom, fonte = DOM.genera(p, p["n_domande"], chiavi, spesa)
     p["spesa_preparazione"] = round(p.get("spesa_preparazione", 0) + spesa["totale"], 4)
     f = Path(p["_cartella"]) / "domande.csv"
@@ -419,7 +532,7 @@ def fai_dashboard(p, domande, cartella, apri=True):
 
 def benvenuto():
     print(grassetto(blu("\n  Visibilità AI")) + " — come ChatGPT, Gemini e Perplexity parlano del tuo sito")
-    print(tenue("  Metodo: AI Search Prompt Library di Aleyda Solis\n"))
+    print()
 
 
 def interattivo():
